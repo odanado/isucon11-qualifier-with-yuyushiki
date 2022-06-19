@@ -4,6 +4,8 @@ set -eux
 
 git pull origin `git symbolic-ref --short HEAD`
 
+cp env.sh /home/isucon/env.sh
+
 # --- app ---
 pushd nodejs
 
