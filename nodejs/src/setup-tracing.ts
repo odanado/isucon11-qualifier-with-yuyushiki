@@ -1,6 +1,6 @@
 import * as TraceAgent from "@google-cloud/trace-agent";
 
-export function setupTracing(name: string): void {
+export function setupTracing(name: string): TraceAgent.PluginTypes.Tracer {
   console.log({ name });
-  TraceAgent.start({ enhancedDatabaseReporting: true });
+  return TraceAgent.start({ enhancedDatabaseReporting: true });
 }
