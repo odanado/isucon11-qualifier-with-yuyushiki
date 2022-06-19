@@ -962,7 +962,7 @@ async function getIsuConditions(
         );
 
   let conditionsResponse: GetIsuConditionResponse[] = [];
-  conditions.forEach((condition) => {
+  conditions.forEach((condition: any) => {
     const [cLevel, err] = calculateConditionLevel(condition.condition);
     if (err) {
       return;
