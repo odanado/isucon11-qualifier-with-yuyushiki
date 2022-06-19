@@ -875,7 +875,7 @@ app.get(
     const db = await pool.getConnection();
     try {
       let jiaUserId: string;
-      const span = await tracer.createChildSpan({name: "get-jia-user-id"});
+      const span = await tracer.createChildSpan({ name: "get-jia-user-id" });
       try {
         jiaUserId = await getUserIdFromSession(req, db);
       } catch (err) {
@@ -1024,7 +1024,11 @@ function calculateConditionLevel(condition: string): [string, Error?] {
 // GET /api/trend
 // ISUの性格毎の最新のコンディション情報
 app.get("/api/trend", async (req, res) => {
+  const span = await tracer.createChildSpan({ name: "get-connection" });
   const db = await pool.getConnection();
+
+  span.endSpan();
+
   try {
     const [characterList] = await db.query<
       (RowDataPacket & { character: string })[]
