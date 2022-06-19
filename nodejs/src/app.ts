@@ -872,7 +872,9 @@ app.get(
     >,
     res
   ) => {
+    const span = await tracer.createChildSpan({ name: "get-connection" });
     const db = await pool.getConnection();
+    span.endSpan();
     try {
       let jiaUserId: string;
       const span = await tracer.createChildSpan({ name: "get-jia-user-id" });
