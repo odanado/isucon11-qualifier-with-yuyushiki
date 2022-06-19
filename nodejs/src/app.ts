@@ -1,3 +1,6 @@
+import { setupTracing } from "./setup-tracing";
+setupTracing("isucon11");
+
 import { spawn } from "child_process";
 import { readFileSync } from "fs";
 import { readFile } from "fs/promises";
@@ -11,7 +14,6 @@ import morgan from "morgan";
 import multer, { MulterError } from "multer";
 import mysql, { RowDataPacket } from "mysql2/promise";
 import qs from "qs";
-import { setupTracing } from "./setup-tracing";
 
 interface Config extends RowDataPacket {
   name: string;
@@ -1223,7 +1225,5 @@ function isValidConditionFormat(condition: string): boolean {
     res.sendFile(path.resolve("../public", "index.html"));
   });
 });
-
-setupTracing("isucon-11");
 
 app.listen(parseInt(process.env["SERVER_APP_PORT"] ?? "3000", 10));
