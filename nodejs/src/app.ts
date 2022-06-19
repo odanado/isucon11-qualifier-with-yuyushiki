@@ -1,3 +1,6 @@
+import { setupTracing } from "./setup-tracing";
+setupTracing("isucon11");
+
 import { spawn } from "child_process";
 import { readFileSync } from "fs";
 import { readFile } from "fs/promises";
