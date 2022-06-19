@@ -5,4 +5,6 @@ cd ../bench
 
 cd ../webapp
 sudo cp /var/log/nginx/access.log logs/access.log
+sudo chmod 777 logs/access.log
 sudo cp /var/log/mysql/mariadb-slow.log logs/mariadb-slow.log
+sudo chmod 777 logs/mariadb-slow.log
