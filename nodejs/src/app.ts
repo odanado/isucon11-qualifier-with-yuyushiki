@@ -12,6 +12,8 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import morgan from "morgan";
 import multer, { MulterError } from "multer";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import mysql, { RowDataPacket } from "mysql2/promise";
 import qs from "qs";
 
