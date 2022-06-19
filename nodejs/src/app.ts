@@ -1142,7 +1142,9 @@ app.post(
       return res.status(202).send();
     }
 
+    const span = await tracer.createChildSpan({ name: "get-connection" });
     const db = await pool.getConnection();
+    span.endSpan();
     try {
       const jiaIsuUUID = req.params.jia_isu_uuid;
 
