@@ -28,6 +28,7 @@ sudo systemctl restart nginx.service
 
 # --- MariaDB ---
 
+sudo rm -f /var/log/mysql/mariadb-slow.log
 sudo cp config/mysql/my.cnf /etc/mysql/my.cnf
 sudo cp -r config/mysql/conf.d/ /etc/mysql/conf.d/
 sudo cp -r config/mysql/mariadb.conf.d/ /etc/mysql/mariadb.conf.d/
