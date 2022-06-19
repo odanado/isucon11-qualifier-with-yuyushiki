@@ -1,5 +1,5 @@
 import { setupTracing } from "./setup-tracing";
-setupTracing("isucon11");
+const tracer = setupTracing("isucon11");
 
 import { spawn } from "child_process";
 import { readFileSync } from "fs";
@@ -875,6 +875,7 @@ app.get(
     const db = await pool.getConnection();
     try {
       let jiaUserId: string;
+      const span = await tracer.createChildSpan({name: "get-jia-user-id"});
       try {
         jiaUserId = await getUserIdFromSession(req, db);
       } catch (err) {
@@ -884,6 +885,7 @@ app.get(
         console.error(err);
         return res.status(500).send();
       }
+      span.endSpan();
 
       const jiaIsuUUID = req.params.jia_isu_uuid;
 
