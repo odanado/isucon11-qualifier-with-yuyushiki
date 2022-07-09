@@ -1,5 +1,5 @@
 import { setupTracing } from "./setup-tracing";
-setupTracing("isucon11");
+const tracer = setupTracing("isucon11");
 
 import { spawn } from "child_process";
 import { readFileSync } from "fs";
@@ -12,6 +12,8 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import morgan from "morgan";
 import multer, { MulterError } from "multer";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import mysql, { RowDataPacket } from "mysql2/promise";
 import qs from "qs";
 
@@ -870,9 +872,12 @@ app.get(
     >,
     res
   ) => {
+    const span = await tracer.createChildSpan({ name: "get-connection" });
     const db = await pool.getConnection();
+    span.endSpan();
     try {
       let jiaUserId: string;
+      const span = await tracer.createChildSpan({ name: "get-jia-user-id" });
       try {
         jiaUserId = await getUserIdFromSession(req, db);
       } catch (err) {
@@ -882,6 +887,7 @@ app.get(
         console.error(err);
         return res.status(500).send();
       }
+      span.endSpan();
 
       const jiaIsuUUID = req.params.jia_isu_uuid;
 
@@ -960,7 +966,7 @@ async function getIsuConditions(
         );
 
   let conditionsResponse: GetIsuConditionResponse[] = [];
-  conditions.forEach((condition) => {
+  conditions.forEach((condition: any) => {
     const [cLevel, err] = calculateConditionLevel(condition.condition);
     if (err) {
       return;
@@ -1020,7 +1026,11 @@ function calculateConditionLevel(condition: string): [string, Error?] {
 // GET /api/trend
 // ISUの性格毎の最新のコンディション情報
 app.get("/api/trend", async (req, res) => {
+  const span = await tracer.createChildSpan({ name: "get-connection" });
   const db = await pool.getConnection();
+
+  span.endSpan();
+
   try {
     const [characterList] = await db.query<
       (RowDataPacket & { character: string })[]
@@ -1132,7 +1142,9 @@ app.post(
       return res.status(202).send();
     }
 
+    const span = await tracer.createChildSpan({ name: "get-connection" });
     const db = await pool.getConnection();
+    span.endSpan();
     try {
       const jiaIsuUUID = req.params.jia_isu_uuid;
 
