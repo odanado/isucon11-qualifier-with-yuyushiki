@@ -5,6 +5,3 @@ MYSQL_DBNAME=isucondition
 MYSQL_PASS=isucon
 POST_ISUCONDITION_TARGET_BASE_URL="https://isucondition-1.t.isucon.dev"
 GOOGLE_APPLICATION_CREDENTIALS=/home/isucon/isucon-yuyushiki-bfdec6342744.json
-
-DD_VERSION=$(cd webapp; git rev-parse HEAD)
-DD_PROFILING_ENABLED=true

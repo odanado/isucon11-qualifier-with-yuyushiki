@@ -1,5 +1,6 @@
 import * as TraceAgent from "@google-cloud/trace-agent";
 import tracer, { Tracer } from "dd-trace";
+import { execSync } from "child_process"
 
 export function setupTracing(name: string): TraceAgent.PluginTypes.Tracer {
   console.log({ name });
@@ -7,5 +8,9 @@ export function setupTracing(name: string): TraceAgent.PluginTypes.Tracer {
 }
 
 export function setupDatadog(): Tracer {
-  return tracer.init();
+  const currentCommitHash = execSync("cd ~/webapp/nodejs/; git rev-parse HEAD").toString().trim()
+  return tracer.init({
+    version: currentCommitHash,
+    profiling: true,
+  });
 }
