@@ -8,8 +8,10 @@
       "type": "node",
       "request": "attach",
       "name": "2台目 (13.231.217.189)",
-      "address": "13.231.217.189",
-      "port": 9229
+      "address": "localhost",
+      "port": 9229,
+      "localRoot": "${workspaceFolder}/nodejs",
+      "remoteRoot": "/home/isucon/webapp/nodejs"
     }
   ]
 }
