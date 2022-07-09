@@ -1,6 +1,5 @@
-import { setupTracing, setupDatadog } from "./setup-tracing";
-const tracer = setupTracing("isucon11");
-setupDatadog();
+import { setupDatadog } from "./setup-tracing";
+const tracer = setupDatadog();
 
 import { spawn } from "child_process";
 import { readFileSync } from "fs";
@@ -13,10 +12,9 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import morgan from "morgan";
 import multer, { MulterError } from "multer";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import mysql, { RowDataPacket } from "mysql2/promise";
 import qs from "qs";
+import { getConnection } from "./tracers";
 
 interface Config extends RowDataPacket {
   name: string;
@@ -245,7 +243,7 @@ app.post(
       return res.status(500).send();
     }
 
-    const db = await pool.getConnection();
+    const db = await getConnection(pool, tracer);
     try {
       await db.query(
         "INSERT INTO `isu_association_config` (`name`, `url`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `url` = VALUES(`url`)",
@@ -266,7 +264,7 @@ app.post(
 // POST /api/auth
 // サインアップ・サインイン
 app.post("/api/auth", async (req, res) => {
-  const db = await pool.getConnection();
+  const db = await getConnection(pool, tracer);
   try {
     const authHeader = req.headers.authorization ?? "";
     const token = authHeader.startsWith("Bearer ")
@@ -302,7 +300,7 @@ app.post("/api/auth", async (req, res) => {
 // POST /api/signout
 // サインアウト
 app.post("/api/signout", async (req, res) => {
-  const db = await pool.getConnection();
+  const db = await getConnection(pool, tracer);
   try {
     try {
       await getUserIdFromSession(req, db);
@@ -324,7 +322,7 @@ app.post("/api/signout", async (req, res) => {
 // GET /api/user/me
 // サインインしている自分自身の情報を取得
 app.get("/api/user/me", async (req, res) => {
-  const db = await pool.getConnection();
+  const db = await getConnection(pool, tracer);
   try {
     let jiaUserId: string;
     try {
@@ -347,7 +345,7 @@ app.get("/api/user/me", async (req, res) => {
 // GET /api/isu
 // ISUの一覧を取得
 app.get("/api/isu", async (req, res) => {
-  const db = await pool.getConnection();
+  const db = await getConnection(pool, tracer);
   try {
     let jiaUserId: string;
     try {
@@ -431,7 +429,7 @@ app.post(
     res
   ) => {
     upload.single("image")(req, res, async (uploadErr) => {
-      const db = await pool.getConnection();
+      const db = await getConnection(pool, tracer);
       try {
         let jiaUserId: string;
         try {
@@ -537,7 +535,7 @@ app.post(
 app.get(
   "/api/isu/:jia_isu_uuid",
   async (req: express.Request<{ jia_isu_uuid: string }>, res) => {
-    const db = await pool.getConnection();
+    const db = await getConnection(pool, tracer);
     try {
       let jiaUserId: string;
       try {
@@ -579,7 +577,7 @@ app.get(
 app.get(
   "/api/isu/:jia_isu_uuid/icon",
   async (req: express.Request<{ jia_isu_uuid: string }>, res) => {
-    const db = await pool.getConnection();
+    const db = await getConnection(pool, tracer);
     try {
       let jiaUserId: string;
       try {
@@ -627,7 +625,7 @@ app.get(
     >,
     res
   ) => {
-    const db = await pool.getConnection();
+    const db = await getConnection(pool, tracer);
     try {
       let jiaUserId: string;
       try {
@@ -873,12 +871,9 @@ app.get(
     >,
     res
   ) => {
-    const span = await tracer.createChildSpan({ name: "get-connection" });
-    const db = await pool.getConnection();
-    span.endSpan();
+    const db = await getConnection(pool, tracer);
     try {
       let jiaUserId: string;
-      const span = await tracer.createChildSpan({ name: "get-jia-user-id" });
       try {
         jiaUserId = await getUserIdFromSession(req, db);
       } catch (err) {
@@ -888,7 +883,6 @@ app.get(
         console.error(err);
         return res.status(500).send();
       }
-      span.endSpan();
 
       const jiaIsuUUID = req.params.jia_isu_uuid;
 
@@ -1027,10 +1021,7 @@ function calculateConditionLevel(condition: string): [string, Error?] {
 // GET /api/trend
 // ISUの性格毎の最新のコンディション情報
 app.get("/api/trend", async (req, res) => {
-  const span = await tracer.createChildSpan({ name: "get-connection" });
-  const db = await pool.getConnection();
-
-  span.endSpan();
+  const db = await getConnection(pool, tracer);
 
   try {
     const [characterList] = await db.query<
@@ -1143,9 +1134,7 @@ app.post(
       return res.status(202).send();
     }
 
-    const span = await tracer.createChildSpan({ name: "get-connection" });
-    const db = await pool.getConnection();
-    span.endSpan();
+    const db = await getConnection(pool, tracer);
     try {
       const jiaIsuUUID = req.params.jia_isu_uuid;
 
