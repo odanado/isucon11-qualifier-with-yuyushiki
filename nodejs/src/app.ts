@@ -136,7 +136,7 @@ const dbinfo: mysql.PoolOptions = {
   user: process.env["MYSQL_USER"] ?? "isucon",
   database: process.env["MYSQL_DBNAME"] ?? "isucondition",
   password: process.env["MYSQL_PASS"] || "isucon",
-  connectionLimit: 10,
+  connectionLimit: 20,
   timezone: "+09:00",
 };
 const pool = mysql.createPool(dbinfo);
