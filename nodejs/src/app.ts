@@ -1153,11 +1153,14 @@ app.post(
         return res.status(400).type("text").send("bad request body");
       }
 
+      await db.beginTransaction();
+
       const [[{ cnt }]] = await db.query<(RowDataPacket & { cnt: number })[]>(
         "SELECT COUNT(*) AS `cnt` FROM `isu` WHERE `jia_isu_uuid` = ?",
         [jiaIsuUUID]
       );
       if (cnt === 0) {
+        await db.rollback();
         return res.status(404).type("text").send("not found: isu");
       }
 
@@ -1166,6 +1169,7 @@ app.post(
         const timestamp = new Date(cond.timestamp * 1000);
 
         if (!isValidConditionFormat(cond.condition)) {
+          await db.rollback();
           return res.status(400).type("text").send("bad request body");
         }
         isuConditionRecords.push([jiaIsuUUID, timestamp, cond.is_sitting, cond.condition, cond.message]);
@@ -1178,10 +1182,15 @@ app.post(
           isuConditionRecords
       );
 
+      await db.commit();
+
       return res.status(202).send();
     } catch (err) {
       console.error(`db error: ${err}`);
+      await db.rollback();
       return res.status(500).send();
+    } finally {
+      db.release();
     }
   }
 );
