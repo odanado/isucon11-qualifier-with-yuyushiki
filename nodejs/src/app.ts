@@ -135,7 +135,7 @@ const dbinfo: mysql.PoolOptions = {
   user: process.env["MYSQL_USER"] ?? "isucon",
   database: process.env["MYSQL_DBNAME"] ?? "isucondition",
   password: process.env["MYSQL_PASS"] || "isucon",
-  connectionLimit: 10,
+  connectionLimit: 20,
   timezone: "+09:00",
 };
 const pool = mysql.createPool(dbinfo);
@@ -1127,12 +1127,12 @@ app.post(
     >,
     res
   ) => {
-    // TODO: 一定割合リクエストを落としてしのぐようにしたが、本来は全量さばけるようにすべき
-    const dropProbability = 0.9;
-    if (Math.random() <= dropProbability) {
-      console.warn("drop post isu condition request");
-      return res.status(202).send();
-    }
+    // 全部流してみる
+    // const dropProbability = 0.5;
+    // if (Math.random() <= dropProbability) {
+    //   console.warn("drop post isu condition request");
+    //   return res.status(202).send();
+    // }
 
     const db = await getConnection(pool, tracer);
     try {
@@ -1154,6 +1154,7 @@ app.post(
         return res.status(404).type("text").send("not found: isu");
       }
 
+      const isuConditionRecords = [];
       for (const cond of request) {
         const timestamp = new Date(cond.timestamp * 1000);
 
@@ -1161,14 +1162,15 @@ app.post(
           await db.rollback();
           return res.status(400).type("text").send("bad request body");
         }
-
-        await db.query(
-          "INSERT INTO `isu_condition`" +
-            "	(`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
-            "	VALUES (?, ?, ?, ?, ?)",
-          [jiaIsuUUID, timestamp, cond.is_sitting, cond.condition, cond.message]
-        );
+        isuConditionRecords.push([jiaIsuUUID, timestamp, cond.is_sitting, cond.condition, cond.message]);
       }
+
+      await db.query(
+        "INSERT INTO `isu_condition`" +
+          "	(`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
+          "	VALUES (?, ?, ?, ?, ?)",
+          isuConditionRecords
+      );
 
       await db.commit();
 
