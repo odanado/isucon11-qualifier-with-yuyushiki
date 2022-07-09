@@ -12,5 +12,6 @@ export function setupDatadog(): Tracer {
   return tracer.init({
     version: currentCommitHash,
     profiling: true,
+    service: "isucon11-qualifier"
   });
 }
