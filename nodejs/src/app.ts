@@ -1164,6 +1164,7 @@ app.post(
         return res.status(404).type("text").send("not found: isu");
       }
 
+      const isuConditionRecords = [];
       for (const cond of request) {
         const timestamp = new Date(cond.timestamp * 1000);
 
@@ -1171,14 +1172,15 @@ app.post(
           await db.rollback();
           return res.status(400).type("text").send("bad request body");
         }
-
-        await db.query(
-          "INSERT INTO `isu_condition`" +
-            "	(`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
-            "	VALUES (?, ?, ?, ?, ?)",
-          [jiaIsuUUID, timestamp, cond.is_sitting, cond.condition, cond.message]
-        );
+        isuConditionRecords.push([jiaIsuUUID, timestamp, cond.is_sitting, cond.condition, cond.message]);
       }
+
+      await db.query(
+        "INSERT INTO `isu_condition`" +
+          "	(`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
+          "	VALUES (?, ?, ?, ?, ?)",
+          isuConditionRecords
+      );
 
       await db.commit();
 
