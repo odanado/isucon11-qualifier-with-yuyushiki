@@ -1,5 +1,6 @@
-import { setupTracing } from "./setup-tracing";
+import { setupTracing, setupDatadog } from "./setup-tracing";
 const tracer = setupTracing("isucon11");
+setupDatadog();
 
 import { spawn } from "child_process";
 import { readFileSync } from "fs";
